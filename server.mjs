@@ -1,12 +1,24 @@
-const express = require('express')
+// const express = require('express')
+// const mongoose = require('mongoose');
+// const cors = require("cors");
+// const path = require('path')
+
+import express from 'express'
+import mongoose from "mongoose"
+import cors from "cors"
+import path from "path";
+const __dirname = path.resolve();
+import bcrypt from "bcrypt"
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+
+
+
+const SECRET = process.env.SECRET || "12345"
+
 const PORT = process.env.PORT || 5000
 const app = express()
-const mongoose = require('mongoose');
-const cors = require("cors");
-const path = require('path')
-const bcrypt = require("bcrypt")
-
-app.use('/', express.static(path.join(__dirname, 'web/build')))
+app.use(cookieParser())
 
 mongoose.connect('mongodb+srv://admin:admin@cluster0.t5qza.mongodb.net/UsersData?retryWrites=true&w=majority');
 
@@ -27,7 +39,17 @@ const Post = mongoose.model('UsersPosts', {
 });
 
 app.use(express.json())
-app.use(cors(["localhost:3000", "localhost:5000"]))
+app.use(cors({
+    origin: ["http://localhost:3000", "http://localhost:5000"],
+    credentials: true
+}))
+
+
+app.use('/', express.static(path.join(__dirname, 'web/build')))
+app.get("/", (req, res, next) => {
+    res.sendFile(path.join(__dirname, "./web/build/index.html"))
+})
+
 
 app.post('/api/v1/login', async (req, res) => {
     if (!req.body.email ||
@@ -47,6 +69,18 @@ app.post('/api/v1/login', async (req, res) => {
                 // res.status(500).send("error in getting database")
                 // } 
                 if (result) {
+                    var token = jwt.sign({
+                        name: user.name,
+                        email: user.email,
+                        _id: user._id,
+                    }, SECRET);
+                    console.log("token created: ", token);
+
+                    res.cookie("token", token, {
+                        httpOnly: true,
+                        // expires: (new Date().getTime + 300000), //5 minutes
+                        maxAge: 300000
+                    });
                     // if (user.password === req.body.password) {
                     res.send(user);
                 } else {
@@ -74,6 +108,10 @@ app.post('/api/v1/signup', async (req, res) => {
         res.status(403).send("required field missing");
         return;
     } else {
+        User.findOne({ email: req.body.email }, async (err, user) => {
+            if (user) {
+                res.send("user already exist");
+            } else{
         console.log(req.body)
         const salt = await bcrypt.genSalt(10);
         const setPass = await bcrypt.hash(req.body.password, salt);
@@ -90,11 +128,41 @@ app.post('/api/v1/signup', async (req, res) => {
             res.send('profile created')
         })
     }
+})}
 })
 
 // app.get('/api/v1/signup', async (req, res) => {})
 // app.put('/api/v1/signup', async (req, res) => {})
 // app.delete('/api/v1/signup', async (req, res) => {})
+
+app.use((req, res, next) => {
+
+    jwt.verify(req.cookies.token, SECRET,
+        function (err, decoded) {
+
+            req.body._decoded = decoded;
+
+            console.log("decoded: ", decoded) // bar
+
+            if (!err) {
+                next();
+            } else {
+                res.status(401).send("Un-Authenticated")
+            }
+
+        })
+
+});
+
+
+app.post('/api/v1/logout', (req, res, next) => {
+    res.cookie("token", "", {
+        httpOnly: true,
+        maxAge: 300000
+    });
+    res.send("logout successfully");
+    // console.log()
+})
 
 app.post('/api/v1/posts', async (req, res) => {
 
@@ -114,15 +182,25 @@ app.post('/api/v1/posts', async (req, res) => {
 
 app.get('/api/v1/posts', (req, res) => {
 
-    Post.find({}, (err, data) => {
+        Post.find({}, (err, data) => {
+    
+            if (err) {
+                res.status(500).send("error in getting database")
+            } else {
+                res.send(data)
+            }
+    
+        })
 
-        if (err) {
-            res.status(500).send("error in getting database")
-        } else {
-            res.send(data)
-        }
+    //  Post.findOne({createdby: req.body._decoded.name}, (err, data) => {
 
-    })
+    //     if (err) {
+    //         res.status(500).send("error in getting database")
+    //     } else {
+    //         res.send(data)
+    //     }
+
+    // })
 
     // User.findOne({email: req.body.email}, (err, data) => {
     //     if (err) {

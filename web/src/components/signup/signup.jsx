@@ -54,7 +54,7 @@ function Signup() {
             website: '',
         },
         onSubmit: function (values) {
-            console.log("values: ", values)
+            // console.log("values: ", values)
             axios.post(`${baseUrl}/api/v1/signup`, {
                 name: values.name,
                 email: values.email,
@@ -68,8 +68,10 @@ function Signup() {
                     if (res.data === "profile created") {
                         alert("signup successfully")
                         setTimeout(() => {
-                            history.push("/login")
+                            history.push("/")
                         }, 1000);
+                    }else{
+                        alert("user already exists")
                     }
                 })
         }
@@ -168,7 +170,7 @@ function Signup() {
                                 <Grid item xl={6} lg={6} xs={12} sm={12} md={12}  >
                                     <Item >
                                         <Button sx={{ marginBottom: "1%" }} variant="contained" color="inherit" type="submit" >Sign up</Button>
-                                        <Button sx={{ marginLeft: "1%", marginBottom: "1%" }} variant="text" color="inherit" type="submit" onClick={() => { history.push("/login") }}>I Have an Account</Button>
+                                        <Button sx={{ marginLeft: "1%", marginBottom: "1%" }} variant="text" color="inherit" type="submit" onClick={() => { history.push("/") }}>I Have an Account</Button>
                                     </Item >
                                 </Grid>
                             </Stack>

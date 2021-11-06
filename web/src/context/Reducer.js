@@ -2,6 +2,7 @@ export const reducer = (state, action) => {
     switch (action.type) {
         case "LOGIN": {
             if (
+                action.payload._id &&
                 action.payload.name &&
                 action.payload.email &&
                 action.payload.contact &&

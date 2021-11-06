@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "cd web && npm install && npm run build",
-    "start": "node server.js",
-    "dev": "node server.js",
+    "start": "node server.mjs",
+    "dev": "nodemon server.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -14,8 +14,11 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "mongoose": "^6.0.12"
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.0.12",
+    "nodemon": "^2.0.14"
   }
 }

@@ -35,18 +35,21 @@ function Login() {
             password: '',
         },
         onSubmit: function (values) {
-            console.log("values: ", values)
+            // console.log("values: ", values)
             axios.post(`${baseUrl}/api/v1/login`, {
                 email: values.email,
                 password: values.password,
-            })
+            }, {
+                withCredentials: true
+              })
                 .then((res) => {
 
                     console.log("res: ", res.data);
-                    if (res.data !== "Authentication fail") {
+                    if (res.data.email ) {
                         dispatch({
                             type: "LOGIN",
                             payload: {
+                                _id: res.data._id,
                                 name: res.data.name,
                                 email: res.data.email,
                                 contact: res.data.contact,
@@ -55,9 +58,9 @@ function Login() {
                             },
                         });
                         alert("login successfull")
-                        setTimeout(() => {
-                            history.push("/posts")
-                        }, 1000);
+                        // setTimeout(() => {
+                        //     history.push("/")
+                        // }, 1000);
                     }
                     else {
                         alert("invalid credential")

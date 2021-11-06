@@ -130,32 +130,52 @@ function Posts() {
   });
 
   function onSubmitFunction(values) {
-    console.log("values: ", values)
-    if (state?.user?.name) {
-      axios.post(`${baseUrl}/api/v1/posts`, {
-        post: values.post,
-        createdby: state.user.name,
-      })
-        .then(res => {
-          console.log(res.data);
-          setToggleGetUser(!toggleGetUser)
-        });
-    }
+    // console.log("values: ", values)
+
+    axios.post(`${baseUrl}/api/v1/posts`, {
+      post: values.post,
+      createdby: state.user.name,
+    }, {
+      withCredentials: true
+    })
+      .then(res => {
+
+        console.log(res.data);
+        setToggleGetUser(!toggleGetUser)
+      });
+
   }
   const [posts, setPosts] = useState([]);
   const [toggleGetUser, setToggleGetUser] = useState(false);
 
   useEffect(() => {
 
-    axios.get(`${baseUrl}/api/v1/posts`)
+
+    axios.get(`${baseUrl}/api/v1/posts`, {
+      withCredentials: true
+    })
       .then(res => {
+
+        // let arr=[];
+        // // res.data.forEach((element)=>{
+        //   arr.push(res.data)
+        // // })
+
+
+
         console.log(res.data);
-        setPosts(res.data)
+        console.log("shahzaib")
+        // setPosts(res.data)
+        setPosts(res.data
+          )
+          
+        // console.log(arr)
       });
 
     return () => {
-      console.log("post shown");
+      // console.log("post shown");
     };
+
   }, [toggleGetUser]);
 
   return (
@@ -200,13 +220,19 @@ function Posts() {
               <Item>
                 <Button sx={{ height: "25px", width: "100%", fontSize: "12px" }} variant="contained" color="error"
                   onClick={() => {
-                   
-                      history.push("/login");
-                      dispatch({
-                        type: "LOGOUT",
-                        payload: null,
-                      });
+
+                    axios.post(`${baseUrl}/api/v1/logout`,{}, {
+                      withCredentials: true
+                  })
+                      .then((res) => {
+                          console.log("res +++: ", res.data);
+  
+                          dispatch({
+                              type: "LOGOUT"
+                          })
+                      })
               
+
                   }}>Logout</Button>
               </Item >
             </Grid>
@@ -214,10 +240,10 @@ function Posts() {
         </div>
       </form>
       <br /><br />
-      {state?.user?.name && posts.map(eachPost => {
-        return <>
+      {state.user.name && posts.map ((eachPost,index) => {
+        return<>
           <Card sx={{ maxWidth: 845, margin: "auto" }}>
-            <CardHeader
+            <CardHeader key={index}
               avatar={<Avatar sx={{ backgroundColor: "transparent" }} aria-label="profile"><img style={{ width: "50px" }} src={imge1} /></Avatar>}
               action={<IconButton aria-label="settings"><MoreVertIcon /></IconButton>}
               title={eachPost.createdby}
@@ -228,7 +254,7 @@ function Posts() {
             //             })}
             />
             <CardContent>
-              <Typography variant="body2" color="text.secondary">
+              <Typography key={index} variant="body2" color="text.secondary">
                 {/* <div style={{overflowWrap: "breakWord"}}> */}
                 {/* {<h4 style={{overflowWrap: "breakWord"}}>{eachPost.post}</h4>} */}
                 {/* </div> */}
